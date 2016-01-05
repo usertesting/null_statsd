@@ -75,5 +75,12 @@ module NullStatsd
     def identifier_string
       "[NullStatsD #{@host}:#{@port}-#{@namespace}]"
     end
+
+    def benchmark(&block)
+      start = Time.now
+      result = block.call
+      elapsed_time = Time.now - start
+      return elapsed_time, result
+    end
   end
 end
