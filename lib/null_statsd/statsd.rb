@@ -51,8 +51,8 @@ module NullStatsd
     end
 
     def time(stat, _opts = {})
-      time_in_ms, result = benchmark { yield }
-      logger.debug "#{identifier_string} Recording timing info in #{stat} -> #{time_in_ms} ms"
+      time_in_sec, result = benchmark { yield }
+      logger.debug "#{identifier_string} Recording timing info in #{stat} -> #{time_in_sec} sec"
       result
     end
 
