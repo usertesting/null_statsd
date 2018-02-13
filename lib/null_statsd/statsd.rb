@@ -46,6 +46,10 @@ module NullStatsd
       logger.debug "#{identifier_string} Event #{title}: #{text}"
     end
 
+    def close
+      logger.debug "Close called"
+    end
+
     def batch
       yield self
     end
