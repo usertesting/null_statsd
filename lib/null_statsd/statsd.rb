@@ -11,39 +11,39 @@ module NullStatsd
     end
 
     def increment(stat, _opts = {})
-      logger.debug "#{identifier_string} Incrementing #{stat}"
+      notify "Incrementing #{key(stat, _opts)}"
     end
 
     def decrement(stat, _opts = {})
-      logger.debug "[#{identifier_string} Deccrementing #{stat}"
+      notify "Decrementing #{key(stat, _opts)}"
     end
 
     def count(stat, count, _opts = {})
-      logger.debug "#{identifier_string} Increasing #{stat} by #{count}"
+      notify "Increasing #{key(stat, _opts)} by #{count}"
     end
 
     def gauge(stat, value, _opts = {})
-      logger.debug "#{identifier_string} Setting gauge #{stat} to #{value}"
+      notify "Setting gauge #{key(stat, _opts)} to #{value}"
     end
 
     def histogram(stat, value, _opts = {})
-      logger.debug "#{identifier_string} Logging histrogram #{stat} -> #{value}"
+      notify "Logging histrogram #{key(stat, _opts)} -> #{value}"
     end
 
     def timing(stat, ms, _sample_rate = 1)
-      logger.debug "#{identifier_string} Timing #{stat} at #{ms} ms"
+      notify "Timing #{stat} at #{ms} ms"
     end
 
     def set(stat, value, _opts = {})
-      logger.debug "#{identifier_string} Setting #{stat} to #{value}"
+      notify "Setting #{key(stat, _opts)} to #{value}"
     end
 
-    def service_check(name, _status, _opts = {})
-      logger.debug "#{identifier_string} Service check #{name}: #{status}"
+    def service_check(name, status, _opts = {})
+      notify "Service check #{key(name, _opts)}: #{status}"
     end
 
     def event(title, text, _opts = {})
-      logger.debug "#{identifier_string} Event #{title}: #{text}"
+      notify "Event #{key(title, _opts)}: #{text}"
     end
 
     def close
@@ -85,6 +85,38 @@ module NullStatsd
       result = block.call
       elapsed_time = Time.now - start
       return elapsed_time, result
+    end
+
+    def notify msg
+      logger.debug "#{identifier_string} #{msg}"
+    end
+
+    # returns string looking like one of:
+    # - arg1
+    # - arg1|arg2
+    # - arg|optkey1:optval1|optkey2:optval2
+    # - arg1|arg2|optkey1:optval1
+    # - arg|optkey1:optval1;optval2
+    def key *args
+      args.compact.map do |arg|
+        # map hashes to nicer formatting for logging - key1:val1|key2:val2
+        if arg.respond_to?(:key)
+          stringify_hash(arg)
+        else
+          arg
+        end
+      end.join('|')
+    end
+
+    def stringify_hash h
+      h.map do |key, val|
+        value = val.respond_to?(:map) ? stringify_array(val) : val
+        "#{key}:#{value}"
+      end.join('|')
+    end
+
+    def stringify_array a
+      a.join(',')
     end
   end
 end
