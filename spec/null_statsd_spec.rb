@@ -61,7 +61,7 @@ describe NullStatsd do
   end
 
   describe "Statsd fakes" do
-    describe "methods with a single parameter" do
+    describe "single key methods" do
       let(:args) { [ 'stat' ] }
 
       describe ".increment" do
@@ -77,7 +77,7 @@ describe NullStatsd do
       end
     end
 
-    describe "methods with a second parameter" do
+    describe "key/value metrics" do
       let(:args) { [ 'stat', 'value' ] }
 
       describe ".count" do
