@@ -100,23 +100,15 @@ module NullStatsd
     def key *args
       args.compact.map do |arg|
         # map hashes to nicer formatting for logging - key1:val1|key2:val2
-        if arg.respond_to?(:key)
-          stringify_hash(arg)
-        else
-          arg
-        end
-      end.join('|')
+        arg.respond_to?(:key) ? stringify_hash(arg) : arg
+     end.join('|')
     end
 
     def stringify_hash h
       h.map do |key, val|
-        value = val.respond_to?(:map) ? stringify_array(val) : val
+        value = val.respond_to?(:map) ? val.join(',') : val
         "#{key}:#{value}"
       end.join('|')
-    end
-
-    def stringify_array a
-      a.join(',')
     end
   end
 end
