@@ -10,40 +10,40 @@ module NullStatsd
       @logger.debug "Connecting to fake Statsd, pretending to be on #{host}:#{port}"
     end
 
-    def increment(stat, _opts = {})
-      notify "Incrementing #{key(stat, _opts)}"
+    def increment(stat, opts = {})
+      notify "Incrementing #{stat} with #{stringify_hash(opts)}"
     end
 
-    def decrement(stat, _opts = {})
-      notify "Decrementing #{key(stat, _opts)}"
+    def decrement(stat, opts = {})
+      notify "Decrementing #{stat} with #{stringify_hash(opts)}"
     end
 
-    def count(stat, count, _opts = {})
-      notify "Increasing #{key(stat, _opts)} by #{count}"
+    def count(stat, count, opts = {})
+      notify "Increasing #{stat} by #{count} with #{stringify_hash(opts)}"
     end
 
-    def gauge(stat, value, _opts = {})
-      notify "Setting gauge #{key(stat, _opts)} to #{value}"
+    def gauge(stat, value, opts = {})
+      notify "Setting gauge #{stat} to #{value} with #{stringify_hash(opts)}"
     end
 
-    def histogram(stat, value, _opts = {})
-      notify "Logging histrogram #{key(stat, _opts)} -> #{value}"
+    def histogram(stat, value, opts = {})
+      notify "Logging histogram #{stat} -> #{value} with #{stringify_hash(opts)}"
     end
 
     def timing(stat, ms, _sample_rate = 1)
       notify "Timing #{stat} at #{ms} ms"
     end
 
-    def set(stat, value, _opts = {})
-      notify "Setting #{key(stat, _opts)} to #{value}"
+    def set(stat, value, opts = {})
+      notify "Setting #{stat} to #{value} with #{stringify_hash(opts)}"
     end
 
-    def service_check(name, status, _opts = {})
-      notify "Service check #{key(name, _opts)}: #{status}"
+    def service_check(name, status, opts = {})
+      notify "Service check #{name}: #{status} with #{stringify_hash(opts)}"
     end
 
-    def event(title, text, _opts = {})
-      notify "Event #{key(title, _opts)}: #{text}"
+    def event(title, text, opts = {})
+      notify "Event #{title}: #{text} with #{stringify_hash(opts)}"
     end
 
     def close
@@ -89,19 +89,6 @@ module NullStatsd
 
     def notify msg
       logger.debug "#{identifier_string} #{msg}"
-    end
-
-    # returns string looking like one of:
-    # - arg1
-    # - arg1|arg2
-    # - arg|optkey1:optval1|optkey2:optval2
-    # - arg1|arg2|optkey1:optval1
-    # - arg|optkey1:optval1;optval2
-    def key *args
-      args.compact.map do |arg|
-        # map hashes to nicer formatting for logging - key1:val1|key2:val2
-        arg.respond_to?(:key) ? stringify_hash(arg) : arg
-     end.join('|')
     end
 
     def stringify_hash h

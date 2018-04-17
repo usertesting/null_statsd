@@ -24,7 +24,7 @@ describe NullStatsd do
 
     describe "without options" do
       let(:method) { ->(args, opts = {}) { @null_statsd.send(method_name, *args, opts) } }
-      let(:expected_key) { args.join('|') }
+      let(:expected_key) { args.first }
 
       it "exists" do
         expect { method.call(args) }.not_to raise_error
@@ -39,20 +39,20 @@ describe NullStatsd do
 
       describe "with options" do
         let(:opts) { { foo: 'bar', baz: 'zork' } }
-        let(:expected_key) { args.first + '\|foo:bar\|baz:zork' }
+        let(:expected_opts) { 'foo:bar\|baz:zork' }
 
-        it "logs a message containing the proper key" do
+        it "logs a message containing the proper string" do
           method.call(args, opts)
-          expect(logger).to have_received(:debug).with(match expected_key)
+          expect(logger).to have_received(:debug).with(match expected_opts)
         end
 
         describe "when options contain an array" do
           let(:opts) { { foo: ['baz', 'bak', 'bat'] } }
-          let(:expected_key) { args.first + "\|foo:baz,bak,bat" }
+          let(:expected_opts) { "foo:baz,bak,bat" }
 
-          it "logs a message containing the proper key" do
+          it "logs a message containing the proper string" do
             method.call(args, opts)
-            expect(logger).to have_received(:debug).with(match expected_key)
+            expect(logger).to have_received(:debug).with(match expected_opts)
           end
         end
       end
