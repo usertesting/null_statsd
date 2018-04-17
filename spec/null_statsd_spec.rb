@@ -52,7 +52,6 @@ describe NullStatsd do
 
           it "logs a message containing the proper key" do
             method.call(args, opts)
-            puts expected_key
             expect(logger).to have_received(:debug).with(match expected_key)
           end
         end
