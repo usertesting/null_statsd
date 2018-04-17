@@ -10,40 +10,40 @@ module NullStatsd
       @logger.debug "Connecting to fake Statsd, pretending to be on #{host}:#{port}"
     end
 
-    def increment(stat, _opts = {})
-      logger.debug "#{identifier_string} Incrementing #{stat}"
+    def increment(stat, opts = {})
+      notify "Incrementing #{stat}#{opts_string(opts)}"
     end
 
-    def decrement(stat, _opts = {})
-      logger.debug "[#{identifier_string} Deccrementing #{stat}"
+    def decrement(stat, opts = {})
+      notify "Decrementing #{stat}#{opts_string(opts)}"
     end
 
-    def count(stat, count, _opts = {})
-      logger.debug "#{identifier_string} Increasing #{stat} by #{count}"
+    def count(stat, count, opts = {})
+      notify "Increasing #{stat} by #{count}#{opts_string(opts)}"
     end
 
-    def gauge(stat, value, _opts = {})
-      logger.debug "#{identifier_string} Setting gauge #{stat} to #{value}"
+    def gauge(stat, value, opts = {})
+      notify "Setting gauge #{stat} to #{value}#{opts_string(opts)}"
     end
 
-    def histogram(stat, value, _opts = {})
-      logger.debug "#{identifier_string} Logging histrogram #{stat} -> #{value}"
+    def histogram(stat, value, opts = {})
+      notify "Logging histogram #{stat} -> #{value}#{opts_string(opts)}"
     end
 
-    def timing(stat, ms, _sample_rate = 1)
-      logger.debug "#{identifier_string} Timing #{stat} at #{ms} ms"
+    def timing(stat, ms, _sample_rate = 1, opts = {})
+      notify "Timing #{stat} at #{ms} ms#{opts_string(opts)}"
     end
 
-    def set(stat, value, _opts = {})
-      logger.debug "#{identifier_string} Setting #{stat} to #{value}"
+    def set(stat, value, opts = {})
+      notify "Setting #{stat} to #{value}#{opts_string(opts)}"
     end
 
-    def service_check(name, _status, _opts = {})
-      logger.debug "#{identifier_string} Service check #{name}: #{status}"
+    def service_check(name, status, opts = {})
+      notify "Service check #{name}: #{status}#{opts_string(opts)}"
     end
 
-    def event(title, text, _opts = {})
-      logger.debug "#{identifier_string} Event #{title}: #{text}"
+    def event(title, text, opts = {})
+      notify "Event #{title}: #{text}#{opts_string(opts)}"
     end
 
     def close
@@ -54,9 +54,9 @@ module NullStatsd
       yield self
     end
 
-    def time(stat, _opts = {})
+    def time(stat, opts = {})
       time_in_sec, result = benchmark { yield }
-      logger.debug "#{identifier_string} Recording timing info in #{stat} -> #{time_in_sec} sec"
+      logger.debug "#{identifier_string} Recording timing info in #{stat} -> #{time_in_sec} sec#{opts_string(opts)}"
       result
     end
 
@@ -85,6 +85,21 @@ module NullStatsd
       result = block.call
       elapsed_time = Time.now - start
       return elapsed_time, result
+    end
+
+    def notify msg
+      logger.debug "#{identifier_string} #{msg}"
+    end
+
+    def opts_string opts
+      opts.empty? ? nil : " with opts #{stringify_hash(opts)}"
+    end
+
+    def stringify_hash h
+      h.map do |key, val|
+        value = val.respond_to?(:map) ? val.join(',') : val
+        "#{key}:#{value}"
+      end.join('|')
     end
   end
 end
