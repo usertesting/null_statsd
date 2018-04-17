@@ -1,7 +1,8 @@
 require 'spec_helper'
+require 'logger'
 
 describe NullStatsd do
-  let(:logger) { double(:logger, debug: nil)}
+  let(:logger) { instance_double("Logger", debug: nil) }
   let(:statsd) { NullStatsd::Statsd.new(host: nil, port: nil, logger: logger) }
 
   it 'has a version number' do

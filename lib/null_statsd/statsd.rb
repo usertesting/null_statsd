@@ -30,8 +30,8 @@ module NullStatsd
       notify "Logging histogram #{stat} -> #{value} with #{stringify_hash(opts)}"
     end
 
-    def timing(stat, ms, _sample_rate = 1)
-      notify "Timing #{stat} at #{ms} ms"
+    def timing(stat, ms, _sample_rate = 1, opts = {})
+      notify "Timing #{stat} at #{ms} ms with #{stringify_hash(opts)}"
     end
 
     def set(stat, value, opts = {})
