@@ -11,39 +11,39 @@ module NullStatsd
     end
 
     def increment(stat, opts = {})
-      notify "Incrementing #{stat} with #{stringify_hash(opts)}"
+      notify "Incrementing #{stat}#{opts_string(opts)}"
     end
 
     def decrement(stat, opts = {})
-      notify "Decrementing #{stat} with #{stringify_hash(opts)}"
+      notify "Decrementing #{stat}#{opts_string(opts)}"
     end
 
     def count(stat, count, opts = {})
-      notify "Increasing #{stat} by #{count} with #{stringify_hash(opts)}"
+      notify "Increasing #{stat} by #{count}#{opts_string(opts)}"
     end
 
     def gauge(stat, value, opts = {})
-      notify "Setting gauge #{stat} to #{value} with #{stringify_hash(opts)}"
+      notify "Setting gauge #{stat} to #{value}#{opts_string(opts)}"
     end
 
     def histogram(stat, value, opts = {})
-      notify "Logging histogram #{stat} -> #{value} with #{stringify_hash(opts)}"
+      notify "Logging histogram #{stat} -> #{value}#{opts_string(opts)}"
     end
 
     def timing(stat, ms, _sample_rate = 1, opts = {})
-      notify "Timing #{stat} at #{ms} ms with #{stringify_hash(opts)}"
+      notify "Timing #{stat} at #{ms} ms#{opts_string(opts)}"
     end
 
     def set(stat, value, opts = {})
-      notify "Setting #{stat} to #{value} with #{stringify_hash(opts)}"
+      notify "Setting #{stat} to #{value}#{opts_string(opts)}"
     end
 
     def service_check(name, status, opts = {})
-      notify "Service check #{name}: #{status} with #{stringify_hash(opts)}"
+      notify "Service check #{name}: #{status}#{opts_string(opts)}"
     end
 
     def event(title, text, opts = {})
-      notify "Event #{title}: #{text} with #{stringify_hash(opts)}"
+      notify "Event #{title}: #{text}#{opts_string(opts)}"
     end
 
     def close
@@ -54,9 +54,9 @@ module NullStatsd
       yield self
     end
 
-    def time(stat, _opts = {})
+    def time(stat, opts = {})
       time_in_sec, result = benchmark { yield }
-      logger.debug "#{identifier_string} Recording timing info in #{stat} -> #{time_in_sec} sec"
+      logger.debug "#{identifier_string} Recording timing info in #{stat} -> #{time_in_sec} sec#{opts_string(opts)}"
       result
     end
 
@@ -89,6 +89,10 @@ module NullStatsd
 
     def notify msg
       logger.debug "#{identifier_string} #{msg}"
+    end
+
+    def opts_string opts
+      opts.empty? ? nil : " with opts #{stringify_hash(opts)}"
     end
 
     def stringify_hash h
