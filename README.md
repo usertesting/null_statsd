@@ -47,6 +47,79 @@ Notice that your `statsd` endpoint is _not_ receiving data. Also notice that you
 [NullStatsD :-] Recording timing info in jobs.Distribution::InvitationWorker.perform -> 0.512917 sec with opts tags:
 ```
 
+### Supported API
+
+`instance = NullStatsd::Statsd.new(host: "https://fakestatsd.com", port: 4242, logger: $stdout`
+
+#### increment(stat, opts = {})
+
+`instance.increment "testers", country: "gb", from_referer: true`
+
+> [NullStatsD :-] Incrementing testers with opts country:gb|from_referer:true
+
+#### decrement(stat, opts = {})
+
+`instance.decrement "testers", country: "de"`
+
+> [NullStatsD :-] Decrementing testers with opts country:de
+
+#### count(stat, opts = {})
+
+`instance.count "responses", 3`
+
+> [NullStatsD :-] Increasing responses by 3
+
+#### guage(stat, opts = {})
+`instance.guage "time_to_complete_study", 83, measurement: "minutes"`
+
+> [NullStatsD :-] Setting guage time_to_complete_study to 83 with opts measurement:minutes
+
+#### histogram(stat, opts = {})
+
+`instance.histogram "matched_demographics", 42`
+
+> [NullStatsD :-] Logging histogram matched_demographics -> 42
+
+#### timing(stat, ms, opts = {})
+
+`instance.timing "time_to_first_tester", 94, tags: "speedy"`
+
+> [NullStatsD :-] Timing time_to_first_tester at 94 ms with opts tags:speedy
+
+#### set(stat, opts = {})
+
+`instance.set "customers_satisfied", 10_000`
+
+> [NullStatsD :-] Setting customers_satisfied to 10000
+
+#### service_check(stat, opts = {})
+
+`instance.service_check "live_conversation", "ok"`
+
+> [NullStatsD :-] Service check live_conversation: ok
+
+#### event(stat, opts = {})
+
+`instance.event "Slack Integration (degraded)", "Customers in the US may experience difficulty connecting"`
+
+> [NullStatsD :-] Event Slack Integration (degraded): Customers in the US may experience difficulty connecting
+
+#### time(stat, opts = {})
+
+```ruby
+instance.time("invitation_duration") do
+  Distribution::InviteTesters.perform!
+end
+```
+
+> [NullStatsD :-] Recording timing info in invitation_duration -> 17 sec
+
+#### close(stat, opts = {})
+
+`instance.close`
+
+> [NullStatsD :-] Close called
+
 ## Development
 
 ## Testing
