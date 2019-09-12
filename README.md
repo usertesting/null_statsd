@@ -1,6 +1,6 @@
 # NullStatsd
 
-NullStatsd is a Statsd implementation which utilizes the [Null Object Pattern](https://en.wikipedia.org/wiki/Null_object_pattern), allowing for a fully stubbed Statsd object in your development and testing environments.
+NullStatsd is a [Statsd](https://github.com/statsd/statsd) implementation which utilizes the [Null Object Pattern](https://en.wikipedia.org/wiki/Null_object_pattern), allowing for a fully stubbed Statsd object in your development and testing environments.
 
 ## Installation
 
@@ -24,22 +24,23 @@ Create a thin wrapper around your Statsd implementation:
 
 ```ruby
 class MyStatsd
-    def self.new
-        if ENV["STATSD_URL"] # OR if Rails.development || Rails.staging ...
-            Datadog::Statsd.new(statsd_host, statsd_port, *additional_params)
-        else
-            NullStatsd::Statsd.new(host: statsd_host, port: statsd_port, logger: Rails.logger)
-        end
+  def self.new
+    if ENV["STATSD_URL"] # OR if Rails.development || Rails.staging ...
+      Statsd.new(statsd_host, statsd_port, *additional_params)
+    else
+      NullStatsd::Statsd.new(host: statsd_host, port: statsd_port, logger: Rails.logger)
     end
+  end
 end
 ```
 
-Create an instance and use it as normal
+Create an instance and use it as normal:
+
 ```ruby
 MyStatsd.new.increment(...)
 ```
 
-Notice that your `statsd` endpoint is _not_ receiving data. Also notice that your _logs_ are.
+Notice that your `statsd` endpoint is _not_ receiving data. Also notice that your _logs_ are receiving data.
 
 ```
 [NullStatsD :-] Incrementing jobs.Distribution::InvitationWorker.success with opts by:1|tags:
@@ -49,58 +50,79 @@ Notice that your `statsd` endpoint is _not_ receiving data. Also notice that you
 
 ### Supported API
 
-`instance = NullStatsd::Statsd.new(host: "https://fakestatsd.com", port: 4242, logger: $stdout`
+```ruby
+instance = NullStatsd::Statsd.new(host: "https://fakestatsd.com", port: 4242, logger: $stdout
+```
 
 #### increment(stat, opts = {})
 
-`instance.increment "testers", country: "gb", from_referer: true`
+```ruby
+instance.increment "testers", country: "gb", from_referer: true
+```
 
 > [NullStatsD :-] Incrementing testers with opts country:gb|from_referer:true
 
 #### decrement(stat, opts = {})
 
-`instance.decrement "testers", country: "de"`
+```ruby
+instance.decrement "testers", country: "de"
+```
 
 > [NullStatsD :-] Decrementing testers with opts country:de
 
 #### count(stat, opts = {})
 
-`instance.count "responses", 3`
+```ruby
+instance.count "responses", 3
+```
 
 > [NullStatsD :-] Increasing responses by 3
 
 #### guage(stat, opts = {})
-`instance.guage "time_to_complete_study", 83, measurement: "minutes"`
+
+```ruby
+instance.guage "time_to_complete_study", 83, measurement: "minutes"
+```
 
 > [NullStatsD :-] Setting guage time_to_complete_study to 83 with opts measurement:minutes
 
 #### histogram(stat, opts = {})
 
-`instance.histogram "matched_demographics", 42`
+```ruby
+instance.histogram "matched_demographics", 42
+```
 
 > [NullStatsD :-] Logging histogram matched_demographics -> 42
 
 #### timing(stat, ms, opts = {})
 
-`instance.timing "time_to_first_tester", 94, tags: "speedy"`
+```ruby
+instance.timing "time_to_first_tester", 94, tags: "speedy"
+```
 
 > [NullStatsD :-] Timing time_to_first_tester at 94 ms with opts tags:speedy
 
 #### set(stat, opts = {})
 
-`instance.set "customers_satisfied", 10_000`
+```ruby
+instance.set "customers_satisfied", 10_000
+```
 
 > [NullStatsD :-] Setting customers_satisfied to 10000
 
 #### service_check(stat, opts = {})
 
-`instance.service_check "live_conversation", "ok"`
+```ruby
+instance.service_check "live_conversation", "ok"
+```
 
 > [NullStatsD :-] Service check live_conversation: ok
 
 #### event(stat, opts = {})
 
-`instance.event "Slack Integration (degraded)", "Customers in the US may experience difficulty connecting"`
+```ruby
+instance.event "Slack Integration (degraded)", "Customers in the US may experience difficulty connecting"
+```
 
 > [NullStatsD :-] Event Slack Integration (degraded): Customers in the US may experience difficulty connecting
 
@@ -116,7 +138,9 @@ end
 
 #### close(stat, opts = {})
 
-`instance.close`
+```ruby
+instance.close
+```
 
 > [NullStatsD :-] Close called
 
