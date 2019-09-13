@@ -43,9 +43,9 @@ MyStatsd.new.increment(...)
 Notice that your `statsd` endpoint is _not_ receiving data. Also notice that your _logs_ are receiving data.
 
 ```
-[NullStatsD :-] Incrementing jobs.Distribution::InvitationWorker.success with opts by:1|tags:
-[NullStatsD :-] Incrementing honeybadger.error with opts by:1|tags:class:Neo4j::Core::CypherSession::ConnectionFailedError,error:true
-[NullStatsD :-] Recording timing info in jobs.Distribution::InvitationWorker.perform -> 0.512917 sec with opts tags:
+[NullStatsD :-] Incrementing media.book.consumed with opts genre:science fiction
+[NullStatsD :-] Decrementing media.book.on_hand
+[NullStatsD :-] Recording timing info in book checkout -> 0.512917 sec
 ```
 
 ### Supported API
@@ -57,18 +57,18 @@ instance = NullStatsd::Statsd.new(host: "https://fakestatsd.com", port: 4242, lo
 #### increment(stat, opts = {})
 
 ```ruby
-instance.increment "testers", country: "gb", from_referer: true
+instance.increment "media.book.consumed", genre: "horror"
 ```
 
-> [NullStatsD :-] Incrementing testers with opts country:gb|from_referer:true
+> [NullStatsD :-] Incrementing media.book.consumed with opts genre:horror
 
 #### decrement(stat, opts = {})
 
 ```ruby
-instance.decrement "testers", country: "de"
+instance.decrement "media.book.on_hand", genre: "science fiction"
 ```
 
-> [NullStatsD :-] Decrementing testers with opts country:de
+> [NullStatsD :-] Decrementing media.book.on_hand with opts genre:science fiction
 
 #### count(stat, opts = {})
 
@@ -81,60 +81,60 @@ instance.count "responses", 3
 #### guage(stat, opts = {})
 
 ```ruby
-instance.guage "time_to_complete_study", 83, measurement: "minutes"
+instance.guage "media.book.return_time", 12, measurement: "days"
 ```
 
-> [NullStatsD :-] Setting guage time_to_complete_study to 83 with opts measurement:minutes
+> [NullStatsD :-] Setting guage media.book.return_time to 12 with opts measurement:days
 
 #### histogram(stat, opts = {})
 
 ```ruby
-instance.histogram "matched_demographics", 42
+instance.histogram "media.book.lent.hour", 42
 ```
 
-> [NullStatsD :-] Logging histogram matched_demographics -> 42
+> [NullStatsD :-] Logging histogram media.book.lent.hour -> 42
 
 #### timing(stat, ms, opts = {})
 
 ```ruby
-instance.timing "time_to_first_tester", 94, tags: "speedy"
+instance.timing "book checkout", 94, tags: "speedy"
 ```
 
-> [NullStatsD :-] Timing time_to_first_tester at 94 ms with opts tags:speedy
+> [NullStatsD :-] Timing book checkout at 94 ms with opts tags:speedy
 
 #### set(stat, opts = {})
 
 ```ruby
-instance.set "customers_satisfied", 10_000
+instance.set "media.book.lent", 10_000_000
 ```
 
-> [NullStatsD :-] Setting customers_satisfied to 10000
+> [NullStatsD :-] Setting media.book.lent to 10000000
 
 #### service_check(stat, opts = {})
 
 ```ruby
-instance.service_check "live_conversation", "ok"
+instance.service_check "door.locked", "ok"
 ```
 
-> [NullStatsD :-] Service check live_conversation: ok
+> [NullStatsD :-] Service check door.locked: ok
 
 #### event(stat, opts = {})
 
 ```ruby
-instance.event "Slack Integration (degraded)", "Customers in the US may experience difficulty connecting"
+instance.event "Leak", "The library roof has a leak on the west end. Please take care"
 ```
 
-> [NullStatsD :-] Event Slack Integration (degraded): Customers in the US may experience difficulty connecting
+> [NullStatsD :-] Event Leak: The library roof has a leak on the west end. Please take care
 
 #### time(stat, opts = {})
 
 ```ruby
-instance.time("invitation_duration") do
-  Distribution::InviteTesters.perform!
+instance.time("media.movie.consume") do
+  Movie.new().watch
 end
 ```
 
-> [NullStatsD :-] Recording timing info in invitation_duration -> 17 sec
+> [NullStatsD :-] Recording timing info in media.movie.consumed -> 12323 sec
 
 #### close(stat, opts = {})
 
