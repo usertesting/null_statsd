@@ -1,4 +1,5 @@
 # NullStatsd
+[![Travis](https://img.shields.io/travis/usertesting/null_statsd?style=for-the-badge&logo=travis)](https://travis-ci.org/usertesting/null_statsd) [![Coveralls github](https://img.shields.io/coveralls/github/usertesting/null_statsd?style=for-the-badge)](https://coveralls.io/github/usertesting/null_statsd) [![Code Climate maintainability](https://img.shields.io/codeclimate/maintainability/usertesting/null_statsd?style=for-the-badge)](https://codeclimate.com/github/usertesting/null_statsd)
 
 NullStatsd is a [Statsd](https://github.com/statsd/statsd) implementation which utilizes the [Null Object Pattern](https://en.wikipedia.org/wiki/Null_object_pattern), allowing for a fully stubbed Statsd object in your development and testing environments.
 
@@ -152,8 +153,20 @@ instance.close
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at [https://github.com/usertesting/null_statsd](https://github.com/usertesting/null_statsd)
-
 ## License
 
-The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
+The gem is available as open source under the terms of the [MIT License](LICENSE.txt).
+
+Library created by [UserTesting](https://usertesting.com).
+
+![UserTesting](UserTesting.png)
+
+## Contributing
+
+1. [Fork it](https://github.com/usertesting/null_statsd/fork)
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create a new Pull Request
+
+Bug reports and pull requests are welcome on GitHub at [https://github.com/usertesting/null_statsd](https://github.com/usertesting/null_statsd)

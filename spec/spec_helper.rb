@@ -1,2 +1,4 @@
-$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
-require 'null_statsd'
+$LOAD_PATH.unshift File.expand_path("../../lib", __FILE__)
+require "coveralls"
+Coveralls.wear!
+require "null_statsd"
