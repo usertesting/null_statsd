@@ -62,7 +62,7 @@ module NullStatsd
 
     def with_namespace(namespace)
       new_ns = dup
-      if @namespace.blank?
+      if @namespace == "" || @namespace == nil
         new_ns.namespace = namespace
       else
         new_ns.namespace = "#{@namespace}.#{namespace}"
@@ -87,19 +87,19 @@ module NullStatsd
       return elapsed_time, result
     end
 
-    def notify msg
+    def notify(msg)
       logger.debug "#{identifier_string} #{msg}"
     end
 
-    def opts_string opts
+    def opts_string(opts)
       opts.empty? ? nil : " with opts #{stringify_hash(opts)}"
     end
 
-    def stringify_hash h
+    def stringify_hash(h)
       h.map do |key, val|
-        value = val.respond_to?(:map) ? val.join(',') : val
+        value = val.respond_to?(:map) ? val.join(",") : val
         "#{key}:#{value}"
-      end.join('|')
+      end.join("|")
     end
   end
 end

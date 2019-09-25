@@ -1,24 +1,24 @@
-require 'spec_helper'
-require 'logger'
+require "spec_helper"
+require "logger"
 
 describe NullStatsd do
   let(:logger) { instance_double("Logger", debug: nil) }
   let(:statsd) { NullStatsd::Statsd.new(host: nil, port: nil, logger: logger) }
 
-  it 'has a version number' do
+  it "has a version number" do
     expect(NullStatsd::VERSION).not_to be nil
   end
 
-  describe '#time' do
-    it 'executes a block' do
-      result = statsd.time('time_me') do
+  describe "#time" do
+    it "executes a block" do
+      result = statsd.time("time_me") do
         1 + 1
       end
       expect(result).to eq(2)
     end
   end
 
-  shared_examples_for "a statsd method" do
+  shared_examples_for "a statsd method" do |method_name|
     before do
       @null_statsd = statsd
     end
@@ -39,7 +39,7 @@ describe NullStatsd do
       end
 
       describe "with options" do
-        let(:opts) { { foo: 'bar', baz: 'zork' } }
+        let(:opts) { { foo: "bar", baz: "zork" } }
         let(:expected_opts) { 'foo:bar\|baz:zork' }
 
         it "logs a message containing the proper string" do
@@ -48,7 +48,7 @@ describe NullStatsd do
         end
 
         describe "when options contain an array" do
-          let(:opts) { { foo: ['baz', 'bak', 'bat'] } }
+          let(:opts) { { foo: ["baz", "bak", "bat"] } }
           let(:expected_opts) { "foo:baz,bak,bat" }
 
           it "logs a message containing the proper string" do
@@ -61,59 +61,97 @@ describe NullStatsd do
   end
 
   describe "Statsd fakes" do
-    describe "single key methods" do
-      let(:args) { [ 'stat' ] }
-
-      describe ".increment" do
-        it_behaves_like "a statsd method" do
-          let(:method_name) { :increment }
-        end
+    describe "#close" do
+      it "logs the proper message" do
+        statsd.close
+        expect(logger).to have_received(:debug).with("Close called")
       end
+    end
 
-      describe ".decrement" do
-        it_behaves_like "a statsd method" do
-          let(:method_name) { :decrement }
+    describe "#batch" do
+      it "yields itself to the given block" do
+        statsd.batch do |instance|
+          expect(instance).to eq statsd
         end
       end
     end
 
+    describe "single arg methods" do
+      let(:args) { ["stat"] }
+
+      describe "#increment" do
+        it_behaves_like "a statsd method", :increment
+      end
+
+      describe "#decrement" do
+        it_behaves_like "a statsd method", :decrement
+      end
+    end
+
     describe "key/value metrics" do
-      let(:args) { [ 'stat', 'value' ] }
+      let(:args) { ["stat", "value"] }
 
-      describe ".count" do
-        it_behaves_like "a statsd method" do
-          let(:method_name) { :count }
-        end
+      describe "#count" do
+        it_behaves_like "a statsd method", :count
       end
 
-      describe ".guage" do
-        it_behaves_like "a statsd method" do
-          let(:method_name) { :gauge }
-        end
+      describe "#gauge" do
+        it_behaves_like "a statsd method", :gauge
       end
 
-      describe '.histogram' do
-        it_behaves_like "a statsd method" do
-          let(:method_name) { :histogram }
-        end
+      describe "#histogram" do
+        it_behaves_like "a statsd method", :histogram
       end
 
-      describe '.set' do
-        it_behaves_like "a statsd method" do
-          let(:method_name) { :set }
-        end
+      describe "#set" do
+        it_behaves_like "a statsd method", :set
       end
 
-      describe '.service_check' do
-        it_behaves_like "a statsd method" do
-          let(:method_name) { :service_check }
-        end
+      describe "#service_check" do
+        it_behaves_like "a statsd method", :service_check
       end
 
-      describe '.event' do
-        it_behaves_like "a statsd method" do
-          let(:method_name) { :event }
+      describe "#event" do
+        it_behaves_like "a statsd method", :event
+      end
+    end
+
+    describe "#timing" do
+      let(:args) { ["stat", 42, 1] }
+      it_behaves_like "a statsd method", :timing
+    end
+  end
+
+  describe "#with_namespace" do
+    let(:namespace) { "Foo" }
+    subject(:with_namespace) { statsd.with_namespace(namespace) }
+
+    context "without a &block" do
+      it "returns a `dup` of itself" do
+        expect(with_namespace.hash).not_to eq statsd.hash
+      end
+    end
+
+    context "with a &block given" do
+      it "yields a properly namespaced dup of itself to the block" do
+        statsd.with_namespace(namespace) do |ns_statsd|
+          expect(ns_statsd.namespace).to eq namespace
+          expect(ns_statsd.hash).not_to eq statsd.hash
         end
+      end
+    end
+
+    describe "for an object without a namespace" do
+      it "adds the namespace" do
+        expect(with_namespace.namespace).to eq namespace
+      end
+    end
+
+    describe "for an object already containing a namespace" do
+      subject(:with_preexisting_namespace) { with_namespace.with_namespace(namespace) }
+
+      it "adds the namespace" do
+        expect(with_preexisting_namespace.namespace).to eq "#{namespace}.#{namespace}"
       end
     end
   end
