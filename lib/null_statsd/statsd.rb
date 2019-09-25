@@ -62,7 +62,7 @@ module NullStatsd
 
     def with_namespace(namespace)
       new_ns = dup
-      if @namespace == ""
+      if @namespace == "" || @namespace == nil
         new_ns.namespace = namespace
       else
         new_ns.namespace = "#{@namespace}.#{namespace}"
