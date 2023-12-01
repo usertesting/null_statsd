@@ -6,15 +6,21 @@ require "null_statsd/version"
 Gem::Specification.new do |spec|
   spec.name          = "null_statsd"
   spec.version       = NullStatsd::VERSION
-  spec.authors       = ["Imad Mouaddine"]
-  spec.email         = ["imouaddine@usertesting.com"]
-  spec.summary       = %q{Implements null pattern for Statsd client}
-  spec.description   = %q{Implements null pattern for Statsd client}
-  spec.homepage      = "https://github.com/usertesting/null_statsd"
+  spec.authors       = ["Imad Mouaddine", "Perry Lee", "Bob Ziuchkovski", "Andrew Selder", "Chris DiMartino", "Justin Aiken", "Eric Mueller"]
+  spec.email         = ["nevinera@gmail.com"]
+  spec.summary       = %q{Implements null-object pattern for Statsd client}
+  spec.description   = %q{Implements null-object pattern for Statsd client}
+  spec.homepage      = "https://github.com/nevinera/null_statsd"
   spec.license       = "MIT"
-  spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features|UserTesting.png)/}) }
-  spec.bindir        = "exe"
-  spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
+
+  spec.files = Dir.chdir(File.expand_path(__dir__)) do
+    `git ls-files -z`
+      .split("\x0")
+      .reject { |f| f.start_with?("spec") }
+  end
+
+  spec.bindir        = "bin"
+  spec.executables   = []
   spec.require_paths = ["lib"]
 
   spec.add_development_dependency "bundler", "~> 2.2"
