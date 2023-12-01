@@ -2,7 +2,7 @@ require "spec_helper"
 require "logger"
 
 describe NullStatsd do
-  let(:logger) { instance_double("Logger", debug: nil) }
+  let(:logger) { instance_double(Logger, debug: nil) }
   let(:statsd) { NullStatsd::Statsd.new(host: nil, port: nil, logger: logger) }
 
   it "has a version number" do
@@ -11,17 +11,25 @@ describe NullStatsd do
 
   describe "#time" do
     it "executes a block" do
-      result = statsd.time("time_me") do
-        1 + 1
-      end
+      result = statsd.time("time_me") { 1 + 1 }
       expect(result).to eq(2)
+    end
+
+    it "logs the expected message with no tags" do
+      statsd.time("time_me") { 1 + 1 }
+      expect(logger).to have_received(:debug)
+        .with(a_string_matching(/^\[NullStatsD [^\]]+\] Recording timing info in time_me -> \S+ sec$/))
+    end
+
+    it "logs the expected message with tags" do
+      statsd.time("time_me", tags: ["a:b", "c:2"]) { 1 + 1 }
+      expect(logger).to have_received(:debug)
+        .with(a_string_matching(/^\[NullStatsD [^\]]+\] Recording .* time_me -> \S+ sec with opts {"tags":\["a:b","c:2"\]}$/))
     end
   end
 
   shared_examples_for "a statsd method" do |method_name|
-    before do
-      @null_statsd = statsd
-    end
+    before { @null_statsd = statsd }
 
     describe "without options" do
       let(:method) { ->(args, opts = {}) { @null_statsd.send(method_name, *args, opts) } }
@@ -40,7 +48,7 @@ describe NullStatsd do
 
       describe "with options" do
         let(:opts) { { foo: "bar", baz: "zork" } }
-        let(:expected_opts) { 'foo:bar\|baz:zork' }
+        let(:expected_opts) { '{"foo":"bar","baz":"zork"}' }
 
         it "logs a message containing the proper string" do
           method.call(args, opts)
@@ -49,7 +57,7 @@ describe NullStatsd do
 
         describe "when options contain an array" do
           let(:opts) { { foo: ["baz", "bak", "bat"] } }
-          let(:expected_opts) { "foo:baz,bak,bat" }
+          let(:expected_opts) { /{"foo":\["baz","bak","bat"\]}/ }
 
           it "logs a message containing the proper string" do
             method.call(args, opts)
@@ -64,7 +72,7 @@ describe NullStatsd do
     describe "#close" do
       it "logs the proper message" do
         statsd.close
-        expect(logger).to have_received(:debug).with("Close called")
+        expect(logger).to have_received(:debug).with(match "Close called")
       end
     end
 
