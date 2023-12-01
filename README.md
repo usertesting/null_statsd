@@ -1,8 +1,8 @@
 # NullStatsd
 
-NullStatsd is a [Statsd](https://github.com/statsd/statsd) implementation which utilizes the
-[Null Object Pattern](https://en.wikipedia.org/wiki/Null_object_pattern), allowing for a fully
-stubbed Statsd object in your development and testing environments.
+NullStatsd is a [Null Object Pattern](https://en.wikipedia.org/wiki/Null_object_pattern)
+implementation of a [Statsd](https://github.com/statsd/statsd) client, allowing for
+conveniently stubbed Statsd objects in your development and testing environments.
 
 ## Installation
 
@@ -22,17 +22,25 @@ Or install it yourself as:
 
 ## Usage
 
-Create a thin wrapper around your Statsd implementation:
+Create a wrapper around your Statsd implementation:
 
 ```ruby
 module MyStatsd
   def self.new
-    if ENV["STATSD_HOST"] # OR if Rails.development || Rails.staging ...
-      Statsd.new(statsd_host, statsd_port, *additional_params)
+    if ENV["STATSD_HOST"] && ENV["STATSD_PORT"]
+      Statsd.new(ENV["STATSD_HOST"], ENV["STATSD_PORT"])
     else
-      NullStatsd::Statsd.new(host: statsd_host, port: statsd_port, logger: Rails.logger)
+      NullStatsd::Statsd.new(host: "fake.host", port: 1234, logger: Logger.new($stderr))
     end
   end
+end
+
+# or perhaps
+
+if Rails.env.production? || Rails.env.staging?
+  $statsd = Datadog::Statsd.new(ENV["DD_HOST"], ENV["DD_PORT"])
+else
+  $statsd = NullStatsd::Statsd.new(host: "fa.ke", port: 42, logger: Rails.logger)
 end
 ```
 
@@ -40,10 +48,10 @@ Create an instance and use it as normal:
 
 ```ruby
 MyStatsd.new.increment(...)
+$statsd.increment(...)
 ```
 
-Notice that your `statsd` endpoint is _not_ receiving data. Also notice that your _logs_ are
-receiving data.
+Notice that your `statsd` endpoint is _not_ receiving data, but your logs are.
 
 ```
 [NullStatsD host:42] Incrementing media.book.consumed with opts {"genre":"science_fiction"}
@@ -51,103 +59,53 @@ receiving data.
 [NullStatsD host:42] Recording timing info in book.checkout -> 0.512917 sec
 ```
 
-### Supported API
+### Supported Calls
 
 ```ruby
-instance = NullStatsd::Statsd.new(host: "fake.com", port: 4242, logger: Logger.new($stdout))
-```
+statsd = NullStatsd::Statsd.new(host: "a.co" port: 42, logger: Logger.new($stdout))
+# => [NullStatsD a.co:42] Connecting to fake Statsd, pretending to be on fake.com:4242
 
-> [NullStatsD :-] Connecting to fake Statsd, pretending to be on fake.com:4242
+statsd.increment "media.book.consumed", genre: "horror"
+# => [NullStatsD a.co:42] Incrementing media.book.consumed with opts {"genre":"horror"}
 
-#### increment(stat, opts = {})
+statsd.decrement "media.book.on_hand", genre: "science fiction"
+# => [NullStatsD a.co:42] Decrementing media.book.on_hand with opts {"genre":"science fiction"}
 
-```ruby
-instance.increment "media.book.consumed", genre: "horror"
-```
+statsd.count "responses", 3
+# => [NullStatsD a.co:42] Increasing responses by 3
 
-> [NullStatsD :-] Incrementing media.book.consumed with opts genre:horror
+statsd.gauge "media.book.return_time", 12, measurement: "days"
+# => [NullStatsD a.co:42] Setting gauge media.book.return_time to 12 with opts {"measurement":"days"}
 
-#### decrement(stat, opts = {})
+statsd.histogram "media.book.lent.hour", 42
+# => [NullStatsD a.co:42] Logging histogram media.book.lent.hour -> 42
 
-```ruby
-instance.decrement "media.book.on_hand", genre: "science fiction"
-```
+statsd.timing "book checkout", 94, tags: "speedy"
+# => [NullStatsD a.co:42] Timing book checkout at 94 ms with opts {"tags":"speedy"}
 
-> [NullStatsD :-] Decrementing media.book.on_hand with opts genre:science fiction
+statsd.set "media.book.lent", 10_000_000
+# => [NullStatsD a.co:42] Setting media.book.lent to 10000000
 
-#### count(stat, opts = {})
+statsd.service_check "door.locked", "ok"
+# => [NullStatsD a.co:42] Service check door.locked: ok
 
-```ruby
-instance.count "responses", 3
-```
+statsd.event "Leak", "The library roof has a leak on the west end. Please take care"
+# => [NullStatsD a.co:42] Event Leak: The library roof has a leak on the west end. Please take care
 
-> [NullStatsD :-] Increasing responses by 3
-
-#### guage(stat, opts = {})
-
-```ruby
-instance.guage "media.book.return_time", 12, measurement: "days"
-```
-
-> [NullStatsD :-] Setting guage media.book.return_time to 12 with opts measurement:days
-
-#### histogram(stat, opts = {})
-
-```ruby
-instance.histogram "media.book.lent.hour", 42
-```
-
-> [NullStatsD :-] Logging histogram media.book.lent.hour -> 42
-
-#### timing(stat, ms, opts = {})
-
-```ruby
-instance.timing "book checkout", 94, tags: "speedy"
-```
-
-> [NullStatsD :-] Timing book checkout at 94 ms with opts tags:speedy
-
-#### set(stat, opts = {})
-
-```ruby
-instance.set "media.book.lent", 10_000_000
-```
-
-> [NullStatsD :-] Setting media.book.lent to 10000000
-
-#### service_check(stat, opts = {})
-
-```ruby
-instance.service_check "door.locked", "ok"
-```
-
-> [NullStatsD :-] Service check door.locked: ok
-
-#### event(stat, opts = {})
-
-```ruby
-instance.event "Leak", "The library roof has a leak on the west end. Please take care"
-```
-
-> [NullStatsD :-] Event Leak: The library roof has a leak on the west end. Please take care
-
-#### time(stat, opts = {})
-
-```ruby
-instance.time("media.movie.consume") do
+statsd.time("media.movie.consume") do
   Movie.new().watch
 end
+# => [NullStatsD a.co:42] Recording timing info in media.movie.consumed -> 12323.23 sec
+
+statsd.close
+# => [NullStatsD a.co:42] Close called
+
+statsd.batch do |s|
+  s.increment "foo.bar"
+  s.increment "baz"
+end
+# This just executes the block, yielding the statsd instance to it.
 ```
-
-> [NullStatsD :-] Recording timing info in media.movie.consumed -> 12323 sec
-
-#### close(stat, opts = {})
-
-```ruby
-instance.close
-```
-
-> [NullStatsD :-] Close called
 
 ## Testing
 
@@ -155,14 +113,8 @@ instance.close
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](LICENSE.txt).
+This gem is available as open source under the terms of the [MIT License](LICENSE.txt).
 
 ## Contributing
-
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
 
 Bug reports and pull requests are welcome on GitHub.
