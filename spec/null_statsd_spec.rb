@@ -1,7 +1,7 @@
 require "spec_helper"
 require "logger"
 
-describe NullStatsd do
+describe NullStatsd::Statsd do
   let(:logger) { instance_double(Logger, debug: nil) }
   let(:statsd) { NullStatsd::Statsd.new(host: nil, port: nil, logger: logger) }
 
@@ -31,7 +31,7 @@ describe NullStatsd do
   shared_examples_for "a statsd method" do |method_name|
     before { @null_statsd = statsd }
 
-    describe "without options" do
+    context "without options" do
       let(:method) { ->(args, opts = {}) { @null_statsd.send(method_name, *args, opts) } }
       let(:expected_key) { args.first }
 
@@ -39,14 +39,23 @@ describe NullStatsd do
         expect { method.call(args) }.not_to raise_error
       end
 
-      describe "without options" do
+      context "while in a namespace" do
+        before { @null_statsd = @null_statsd.with_namespace("foo") }
+        it "logs a message with the namespace in the identifier" do
+          method.call(args)
+          expect(logger).to have_received(:debug).with(match expected_key)
+          expect(logger).to have_received(:debug).with(match /\[NullStatsD :-foo\]/)
+        end
+      end
+
+      context "without options" do
         it "logs a message containing the proper key" do
           method.call(args)
           expect(logger).to have_received(:debug).with(match expected_key)
         end
       end
 
-      describe "with options" do
+      context "with options" do
         let(:opts) { { foo: "bar", baz: "zork" } }
         let(:expected_opts) { '{"foo":"bar","baz":"zork"}' }
 
@@ -55,7 +64,7 @@ describe NullStatsd do
           expect(logger).to have_received(:debug).with(match expected_opts)
         end
 
-        describe "when options contain an array" do
+        context "when options contain an array" do
           let(:opts) { { foo: ["baz", "bak", "bat"] } }
           let(:expected_opts) { /{"foo":\["baz","bak","bat"\]}/ }
 
@@ -149,13 +158,13 @@ describe NullStatsd do
       end
     end
 
-    describe "for an object without a namespace" do
+    context "for an object without a namespace" do
       it "adds the namespace" do
         expect(with_namespace.namespace).to eq namespace
       end
     end
 
-    describe "for an object already containing a namespace" do
+    context "for an object already containing a namespace" do
       subject(:with_preexisting_namespace) { with_namespace.with_namespace(namespace) }
 
       it "adds the namespace" do
