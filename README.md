@@ -1,7 +1,8 @@
 # NullStatsd
-[![Travis](https://img.shields.io/travis/usertesting/null_statsd?style=for-the-badge&logo=travis)](https://travis-ci.org/usertesting/null_statsd) [![Coveralls github](https://img.shields.io/coveralls/github/usertesting/null_statsd?style=for-the-badge)](https://coveralls.io/github/usertesting/null_statsd) [![Code Climate maintainability](https://img.shields.io/codeclimate/maintainability/usertesting/null_statsd?style=for-the-badge)](https://codeclimate.com/github/usertesting/null_statsd)
 
-NullStatsd is a [Statsd](https://github.com/statsd/statsd) implementation which utilizes the [Null Object Pattern](https://en.wikipedia.org/wiki/Null_object_pattern), allowing for a fully stubbed Statsd object in your development and testing environments.
+NullStatsd is a [Statsd](https://github.com/statsd/statsd) implementation which utilizes the
+[Null Object Pattern](https://en.wikipedia.org/wiki/Null_object_pattern), allowing for a fully
+stubbed Statsd object in your development and testing environments.
 
 ## Installation
 
@@ -24,9 +25,9 @@ Or install it yourself as:
 Create a thin wrapper around your Statsd implementation:
 
 ```ruby
-class MyStatsd
+module MyStatsd
   def self.new
-    if ENV["STATSD_URL"] # OR if Rails.development || Rails.staging ...
+    if ENV["STATSD_HOST"] # OR if Rails.development || Rails.staging ...
       Statsd.new(statsd_host, statsd_port, *additional_params)
     else
       NullStatsd::Statsd.new(host: statsd_host, port: statsd_port, logger: Rails.logger)
@@ -41,19 +42,22 @@ Create an instance and use it as normal:
 MyStatsd.new.increment(...)
 ```
 
-Notice that your `statsd` endpoint is _not_ receiving data. Also notice that your _logs_ are receiving data.
+Notice that your `statsd` endpoint is _not_ receiving data. Also notice that your _logs_ are
+receiving data.
 
 ```
-[NullStatsD :-] Incrementing media.book.consumed with opts genre:science fiction
-[NullStatsD :-] Decrementing media.book.on_hand
-[NullStatsD :-] Recording timing info in book checkout -> 0.512917 sec
+[NullStatsD host:42] Incrementing media.book.consumed with opts {"genre":"science_fiction"}
+[NullStatsD host:42] Decrementing media.book.on_hand
+[NullStatsD host:42] Recording timing info in book.checkout -> 0.512917 sec
 ```
 
 ### Supported API
 
 ```ruby
-instance = NullStatsd::Statsd.new(host: "https://fakestatsd.com", port: 4242, logger: $stdout
+instance = NullStatsd::Statsd.new(host: "fake.com", port: 4242, logger: Logger.new($stdout))
 ```
+
+> [NullStatsD :-] Connecting to fake Statsd, pretending to be on fake.com:4242
 
 #### increment(stat, opts = {})
 
@@ -145,8 +149,6 @@ instance.close
 
 > [NullStatsD :-] Close called
 
-## Development
-
 ## Testing
 
 `rake spec`
@@ -155,16 +157,12 @@ instance.close
 
 The gem is available as open source under the terms of the [MIT License](LICENSE.txt).
 
-Library created by [UserTesting](https://usertesting.com).
-
-![UserTesting](UserTesting.png)
-
 ## Contributing
 
-1. [Fork it](https://github.com/usertesting/null_statsd/fork)
+1. Fork it
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
 
-Bug reports and pull requests are welcome on GitHub at [https://github.com/usertesting/null_statsd](https://github.com/usertesting/null_statsd)
+Bug reports and pull requests are welcome on GitHub.
