@@ -7,7 +7,7 @@ module NullStatsd
       @port = port
       @namespace = ""
       @logger = logger
-      @logger.debug "Connecting to fake Statsd, pretending to be on #{host}:#{port}"
+      notify "Connecting to fake Statsd, pretending to be on #{host}:#{port}"
     end
 
     def increment(stat, opts = {})
@@ -47,7 +47,7 @@ module NullStatsd
     end
 
     def close
-      logger.debug "Close called"
+      notify "Close called"
     end
 
     def batch
@@ -56,7 +56,7 @@ module NullStatsd
 
     def time(stat, opts = {})
       time_in_sec, result = benchmark { yield }
-      logger.debug "#{identifier_string} Recording timing info in #{stat} -> #{time_in_sec} sec#{opts_string(opts)}"
+      notify "Recording timing info in #{stat} -> #{time_in_sec} sec#{opts_string(opts)}"
       result
     end
 
@@ -77,7 +77,11 @@ module NullStatsd
     private
 
     def identifier_string
-      "[NullStatsD #{@host}:#{@port}-#{@namespace}]"
+      if @namespace && @namespace != ""
+        "[NullStatsD #{@host}:#{@port}-#{@namespace}]"
+      else
+        "[NullStatsD #{@host}:#{@port}]"
+      end
     end
 
     def benchmark(&block)
