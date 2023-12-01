@@ -1,3 +1,5 @@
+require "json"
+
 module NullStatsd
   class Statsd
     attr_accessor :namespace, :host, :port, :logger
@@ -96,14 +98,7 @@ module NullStatsd
     end
 
     def opts_string(opts)
-      opts.empty? ? nil : " with opts #{stringify_hash(opts)}"
-    end
-
-    def stringify_hash(h)
-      h.map do |key, val|
-        value = val.respond_to?(:map) ? val.join(",") : val
-        "#{key}:#{value}"
-      end.join("|")
+      opts.empty? ? nil : " with opts #{opts.to_json}"
     end
   end
 end
