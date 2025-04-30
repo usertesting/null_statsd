@@ -1,3 +1,7 @@
+> # Archival Notice
+> 
+> This repository will no longer be maintained by UserTesting, and will be archived in the near future. The most recent version of this gem will still be published and available to use. Thank you to everyone who contributed to this project!
+
 # NullStatsd
 [![Travis](https://img.shields.io/travis/usertesting/null_statsd?style=for-the-badge&logo=travis)](https://travis-ci.org/usertesting/null_statsd) [![Coveralls github](https://img.shields.io/coveralls/github/usertesting/null_statsd?style=for-the-badge)](https://coveralls.io/github/usertesting/null_statsd) [![Code Climate maintainability](https://img.shields.io/codeclimate/maintainability/usertesting/null_statsd?style=for-the-badge)](https://codeclimate.com/github/usertesting/null_statsd)
 
